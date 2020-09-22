@@ -1,0 +1,152 @@
+#####
+# Given an integer k and two polynomials f,g of the same degree (say n),
+# the program takes their companion matrices A,B and the vector
+# v=(A^(-1)B-I)e_n, then it finds out whether there is
+# a product M of at most k matrices in {A,B,A^(-1),B^(-1)}
+# such that the n-th entry of the vector Mv is in {+1,-1,+2,-2}
+# and the three vectors M^(-1)v,v,Mv are linearly independent.
+#####
+# The following subroutine converts the vector vf of the coefficients
+# of a polynomial f into the companion matrix of f.
+def companion_internal(vf):
+    le=len(vf)-1
+    M=matrix(le,le)
+    M[0,le-1]=-vf[0]
+    i=1
+    while i<le:
+        M[i,i-1]=1
+        M[i,le-1]=-vf[i]
+        i+=1
+    return M
+#####
+# The following subroutine converts a polynomial func
+# into its companion matrix.
+def companion(func):
+    return companion_internal(func.list())
+#####
+# The following subroutine takes two nxn-matrices A,B and returns
+# the vector v=(A^(-1)B-I)e_n.
+def othervec(A,B,n):
+    en=vector([0]*n)
+    en[n-1]=1
+    return (A^(-1)*B-matrix.identity(n))*en
+#####
+# The following subroutine checks if the last entry of a vector v
+# is in {+1,-1,+2,-2}.
+def checklast(v):
+    entry=v[len(v)-1]
+    if entry==1 or entry==-1 or entry==2 or entry==-2:
+        return True
+    else:
+        return False
+#####
+# The following subroutine checks if M^(-1)v,v,Mv are
+# linearly independent (in Q). It returns True if they
+# are, and False if they are not.
+def independent(M,v):
+    E=QQ^len(v)
+    return not E.are_linearly_dependent([M^(-1)*v,v,M*v])
+#####
+# The following subroutine tries both the "checklast" subroutine
+# on a vector v and the "independent" subroutine on v and a matrix M.
+# If both are True, it returns [True,M]; if at least one is False,
+# it returns [False].
+def tryone(M,v,s):
+    if checklast(M*v):
+        if independent(M,v):
+            return [True,M,s]
+        return [False]
+    return [False]
+#####
+# The following is the main subroutine: given an integer k, a vector v,
+# 5 matrices A,B,C,D,M (with C=A^(-1),D=B^(-1)), a string s
+# of A,B,A^(-1),B^(-1) corresponding to M, and an indicator that says
+# what the last matrix in the decomposition of M was, first it checks
+# whether M and v satisfy the two desired properties; then if they
+# do not and |s|<k, it calls recursively the same subroutine for
+# M*A,M*B,M*A^(-1),M*B^(-1) (actually, only 3 of them, the ones that
+# do not involve a X*X^(-1) at the end). If at any point there is one M
+# that satisfies the two desired properties, it returns [True,M,s];
+# if there is not, it returns [False].
+def tryall(s,k,A,B,C,D,M,v,lastguy):
+    check=tryone(M,v,s)
+    if len(s)<k:
+        if lastguy==0:
+            Next=[['A',A],['B',B],['A^(-1)',C],['B^(-1)',D]]
+        elif lastguy=='A':
+            Next=[['A',A],['B',B],['B^(-1)',D]]
+        elif lastguy=='B':
+            Next=[['A',A],['B',B],['A^(-1)',C]]
+        elif lastguy=='A^(-1)':
+            Next=[['B',B],['A^(-1)',C],['B^(-1)',D]]
+        elif lastguy=='B^(-1)':
+            Next=[['A',A],['A^(-1)',C],['B^(-1)',D]]
+        else:
+            return 'Error'
+        indnext=0
+        while indnext<len(Next):
+            if check==[False]:
+                check=tryall(s+[Next[indnext][0]],k,A,B,C,D, \
+                M*Next[indnext][1],v,Next[indnext][0])
+            indnext+=1
+    return check
+#####
+# The following is the main program, which includes all the printing.
+# The input is made of the polynomials f,g
+# and of the maximal length k that one wants to check.
+def main(f,g,k):
+    # Printing the input.
+    print('== Input ==')
+    print('Polynomial f:')
+    print(f)
+    print('Polynomial g:')
+    print(g)
+    A=companion(f)
+    B=companion(g)
+    C=A^(-1)
+    D=B^(-1)
+    v=othervec(A,B,f.degree(x))
+    print('Matrix A:')
+    print(A)
+    print('Matrix B:')
+    print(B)
+    print('Matrix A^(-1):')
+    print(C)
+    print('Matrix B^(-1):')
+    print(D)
+    print('Vector v:')
+    print(v)
+    print('We try up to length',k,'and see if there is a matrix that works.')
+    # Here the main subroutine is called.
+    final=tryall([],k,A,B,C,D,matrix.identity(f.degree(x)),v,0)
+    # If "final" is [False], it means that there was no product of at most
+    # k instances of A,B,A^(-1),B^(-1) such that the conditions are satisfied.
+    # Otherwise, "final" is [True,M,s] where M is the product matrix itself
+    # and s is a string of A,B,A^(-1),B^(-1) that represents M.
+    print(' ')
+    print('== Output ==')
+    if final[0]==False:
+        print('There is no word of at most',k,'letters that respects all conditions.')
+    elif final[0]==True:
+        print('There is a word respecting all conditions!')
+        s=final[2]
+        le=len(s)
+        strin=''
+        i=0
+        while i<le:
+            strin=strin+s[i]
+            i+=1
+        print('Product:')
+        print(strin)
+        print('Matrix M to which it corresponds:')
+        print(final[1])
+        print('Vectors Mv,v,M^(-1)v:')
+        print(final[1]*v)
+        print(v)
+        print(final[1]^(-1)*v)
+    else:
+        print('There is some error in this code.')
+#####
+# Here is the call to the main program. The first two entries are f,g
+# and the third entry is the maximal length that one wants to check.
+main( cyclotomic_polynomial(1)^6 , cyclotomic_polynomial(3)^2*cyclotomic_polynomial(6) , 9 )
