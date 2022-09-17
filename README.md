@@ -1,7 +1,7 @@
 # Sage-BDSS20
 SageMath code for "Symplectic Hypergeometric Groups of Degree Six" (Bajpai, Dona, Singh, Singh)
 
-The code deposited here refers to a SageMath program referring to the paper "Symplectic Hypergeometric Groups of Degree Six" (to appear in J. Algebra, available as arXiv:2003.10191v2), by Jitendra Bajpai, Daniele Dona, Sandip Singh, and Shashank Vikram Singh.
+The code deposited here refers to a SageMath program referring to the paper "Symplectic Hypergeometric Groups of Degree Six" (J. Algebra, 575:256--273, 2021), by Jitendra Bajpai, Daniele Dona, Sandip Singh, and Shashank Vikram Singh. Any licence that may apply to the paper "Symplectic Hypergeometric Groups of Degree Six" applies to all the files contained here as well.
 
 The program is written in SageMath, version 8.9: the computations are quite elementary and could have been performed by programs in other languages as well but SageMath is open-source which is why we chose to use it.
 
